@@ -2,13 +2,14 @@ const express = require("express");
 const bcrypt = require("bcryptjs"); // Assurez-vous que cette ligne est présente
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
-
-
+const Reservation = require("../models/reservation");
+const auth = require("../middleware/auth"); // Importer le middleware d'authentification
 
 const router = express.Router();
 
 // 🔹 Route d'inscription
 router.post("/register", async (req, res) => {
+    console.log("Données reçues :", req.body);
     try {
         const { first_name, last_name, email, phone, password } = req.body;
 
@@ -52,6 +53,29 @@ router.post("/login", async (req, res) => {
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
         res.json({ token, user });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 🔹 Route pour créer une réservation
+router.post("/reserve", auth, async (req, res) => {
+    console.log(req.body);
+    try {
+        const { selectedService, selectedDate, selectedTime, selectedSalon, selectedHairdresser, userInfo } = req.body;
+
+        const reservation = new Reservation({
+            userId: req.user.id, // Utiliser l'ID de l'utilisateur connecté
+            selectedService,
+            selectedDate,
+            selectedTime,
+            selectedSalon,
+            selectedHairdresser,
+            userInfo,
+        });
+
+        await reservation.save();
+        res.status(201).json({ message: "Réservation créée avec succès", reservation });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

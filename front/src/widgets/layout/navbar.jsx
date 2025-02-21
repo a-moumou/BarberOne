@@ -9,16 +9,25 @@ import {
   IconButton,
 } from "@material-tailwind/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import axios from "axios";
 
 export function Navbar({ brandName, routes, action }) {
   const [openNav, setOpenNav] = React.useState(false);
+  const [isLoggedIn, setIsLoggedIn] = React.useState(!!localStorage.getItem("token")); // Vérifie si l'utilisateur est connecté
 
   React.useEffect(() => {
-    window.addEventListener(
-      "resize",
-      () => window.innerWidth >= 960 && setOpenNav(false)
-    );
+    const handleResize = () => {
+      if (window.innerWidth >= 960) setOpenNav(false);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize); // Nettoyage de l'événement
   }, []);
+
+  // Ajout du console.log pour afficher l'état de connexion
+  React.useEffect(() => {
+    console.log(`État de connexion : ${isLoggedIn ? "Connecté" : "Non connecté"}`);
+  }, [isLoggedIn]); // Dépendance sur isLoggedIn
 
   const navList = (
     <ul className="mb-4 mt-2 flex flex-col gap-2 text-inherit lg:mb-0 lg:mt-0 lg:flex-row lg:items-center lg:gap-6">
@@ -60,6 +69,12 @@ export function Navbar({ brandName, routes, action }) {
     </ul>
   );
 
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // Supprime le token
+    setIsLoggedIn(false); // Met à jour l'état de connexion
+    window.location.reload(); // Recharge la page pour mettre à jour l'état
+  };
+
   return (
     <MTNavbar color="transparent" className="p-3">
       <div className="container mx-auto flex items-center justify-between text-white">
@@ -71,14 +86,17 @@ export function Navbar({ brandName, routes, action }) {
         </Link>
         <div className="hidden lg:block">{navList}</div>
         <div className="hidden gap-2 lg:flex">
-          <a
-          // href="https://www.material-tailwind.com/blocks?ref=mtkr"
-          // target="_blank"
-          >
-            <Button variant="gradient" size="lg" fullWidth>
-              <Link to="/sign-in">Se connecter</Link> {/* Ajout du lien vers la page de connexion */}
+          {isLoggedIn ? ( // Vérifie si l'utilisateur est connecté
+            <Button variant="gradient" size="lg" fullWidth onClick={handleLogout}>
+              Se déconnecter
             </Button>
-          </a>
+          ) : (
+            <Link to="/sign-in">
+              <Button variant="gradient" size="lg" fullWidth>
+                Se connecter
+              </Button>
+            </Link>
+          )}
           {React.cloneElement(action, {
             className: "hidden lg:inline-block",
           })}

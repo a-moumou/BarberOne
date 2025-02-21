@@ -18,6 +18,7 @@ export function SignUp() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Données à envoyer :", { firstName, lastName, email, phone, password });
     try {
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
         first_name: firstName,

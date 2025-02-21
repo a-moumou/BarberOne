@@ -6,22 +6,22 @@ import {
 
 export const featuresData = [
   {
-    color: "black",
-    title: "Chilly-Mazarin",
+    color: "grey",
+    title: "Chilly-Mazarin 1",
     icon: MapPinIcon,
     description:
       "77 Rue de Gravigny, 91380 Chilly-Mazarin",
   },
   {
-    color: "black",
-    title: "Chilly-Mazarin",
+    color: "grey",
+    title: "Chilly-Mazarin 2",
     icon: MapPinIcon,
     description:
       "77 Rue de Gravigny, 91380 Chilly-Mazarin",
   },
   {
-    color: "black",
-    title: "Chilly-Mazarin",
+    color: "grey",
+    title: "Chilly-Mazarin 3",
     icon: MapPinIcon,
     description:
       "77 Rue de Gravigny, 91380 Chilly-Mazarin",

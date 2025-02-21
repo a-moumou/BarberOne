@@ -21,6 +21,8 @@ export function SignIn() {
         password,
       });
       console.log(response.data);
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("userName", response.data.user.first_name);
       navigate("/home");
     } catch (error) {
       console.error(error.response.data);
