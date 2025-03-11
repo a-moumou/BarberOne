@@ -1,4 +1,4 @@
-import { Home, Profile, SignIn, SignUp, Reserve } from "@/pages";
+import { Home, Profile, SignIn, SignUp, Reserve, AddHairdresser, AddSalon } from "@/pages";
 
 export const routes = [
   {
@@ -25,6 +25,16 @@ export const routes = [
     name: "",
     path: "/reserve",
     element: <Reserve />,
+  },
+  {
+    name: "Ajouter Coiffeur",
+    path: "/add-hairdresser",
+    element: <AddHairdresser />,
+  },
+  {
+    name: "Ajouter Salon",
+    path: "/add-salon",
+    element: <AddSalon />,
   },
 ];
 

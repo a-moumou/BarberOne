@@ -9,10 +9,10 @@ export function Footer({ title, description, socials, menus, copyright }) {
       <div className="container mx-auto">
         <div className="flex flex-wrap pt-6 text-center lg:text-left">
           <div className="w-full px-4 lg:w-6/12">
-            <Typography variant="h4" className="mb-4" color="blue-gray">
+            <Typography variant="h4" className="mb-4 text-2xl lg:text-4xl" color="blue-gray">
               {title}
             </Typography>
-            <Typography className="font-normal text-blue-gray-500 lg:w-2/5">
+            <Typography className="font-normal text-sm lg:text-base text-blue-gray-500 lg:w-2/5 mx-auto lg:mx-0">
               {description}
             </Typography>
             <div className="mx-auto mt-6 mb-8 flex justify-center gap-2 md:mb-0 lg:justify-start">
@@ -32,7 +32,7 @@ export function Footer({ title, description, socials, menus, copyright }) {
               ))}
             </div>
           </div>
-          <div className="mx-auto mt-12 grid w-max grid-cols-2 gap-24 lg:mt-0">
+          <div className="mx-auto mt-12 grid w-max grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
             {menus.map(({ name, items }) => (
               <div key={name}>
                 <Typography
@@ -63,11 +63,11 @@ export function Footer({ title, description, socials, menus, copyright }) {
           </div>
         </div>
         <hr className="my-6 border-gray-300" />
-        <div className="flex flex-wrap items-center justify-center md:justify-between">
-          <div className="mx-auto w-full px-4 text-center">
+        <div className="flex flex-wrap items-center justify-between">
+          <div className="w-full px-4 text-center">
             <Typography
               variant="small"
-              className="font-normal text-blue-gray-500"
+              className="text-xs lg:text-sm font-normal text-blue-gray-500"
             >
               {copyright}
             </Typography>

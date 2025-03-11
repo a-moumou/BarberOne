@@ -22,7 +22,7 @@ export function SignIn() {
       });
       console.log(response.data);
       localStorage.setItem("token", response.data.token);
-      localStorage.setItem("userName", response.data.user.first_name);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
       navigate("/home");
     } catch (error) {
       console.error(error.response.data);

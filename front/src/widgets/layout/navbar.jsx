@@ -120,19 +120,24 @@ export function Navbar({ brandName, routes, action }) {
         open={openNav}
       >
         <div className="container mx-auto">
-          {navList}
-          <a
-            // href="https://www.material-tailwind.com/blocks/react?ref=mtkr"
-            // target="_blank"
-            className="mb-2 block"
-          >
-            <Button variant="gradient" size="lg" fullWidth>
-              <Link to="/reserve">Réserver</Link> {/* Lien vers la page de réservation */}
-            </Button>
-          </a>
-          {React.cloneElement(action, {
-            className: "w-full block",
-          })}
+          <div className="flex flex-col gap-2">
+            {isLoggedIn ? (
+              <Button variant="gradient" size="lg" fullWidth onClick={handleLogout}>
+                Se déconnecter
+              </Button>
+            ) : (
+              <Link to="/sign-in" className="[&>*]:w-full">
+                <Button variant="gradient" size="lg" fullWidth>
+                  Se connecter
+                </Button>
+              </Link>
+            )}
+            {React.cloneElement(action, {
+              className: "w-full",
+              variant: "gradient",
+              size: "lg"
+            })}
+          </div>
         </div>
       </MobileNav>
     </MTNavbar>
@@ -142,14 +147,11 @@ export function Navbar({ brandName, routes, action }) {
 Navbar.defaultProps = {
   brandName: "",
   action: (
-    <a
-    // href="https://www.creative-tim.com/product/material-tailwind-kit-react"
-    // target="_blank"
-    >
+    <Link to="/reserve">
       <Button variant="gradient" size="lg" fullWidth>
-        <Link to="/reserve">Réserver</Link>
+        Réserver
       </Button>
-    </a>
+    </Link>
   ),
 };
 
