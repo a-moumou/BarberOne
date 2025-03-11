@@ -15,6 +15,8 @@ app.use(cors());
 
 // Routes
 app.use("/api/auth", require("./routes/auth"));
+app.use("/api/hairdressers", require("./routes/hairdresser"));
+app.use("/api/salons", require("./routes/salon"));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Serveur lancé sur le port ${PORT}`));
