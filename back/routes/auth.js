@@ -1,57 +1,50 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer"); // Ajouter Nodemailer
-const User = require("../models/user");
-const Reservation = require("../models/reservation");
-const Salon = require("../models/salon"); // Importer le modèle Salon
-const auth = require("../middleware/auth");
-const transporter = require("../config/email"); // Remplacer l'import Nodemailer
-
+const User = require("../models/User");
 const router = express.Router();
 
-// Route pour créer une réservation
-router.post("/reserve", auth, async (req, res) => {
-    try {
-        const { selectedService, selectedDate, selectedTime, selectedSalon, selectedHairdresser, userInfo } = req.body;
+// Connexion
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
 
-        // Récupérer l'utilisateur connecté
-        const user = await User.findById(req.user.id);
-        if (!user) return res.status(404).json({ message: "Utilisateur non trouvé" });
+    if (!user) return res.status(400).json({ message: "Email non trouvé" });
 
-        // Vérifier si le créneau est déjà réservé
-        const existingReservation = await Reservation.findOne({
-            selectedHairdresser,
-            selectedDate,
-            selectedTime,
-        });
+    const isMatch = await bcrypt.compare(password, user.password_hash);
+    if (!isMatch) return res.status(400).json({ message: "Mot de passe incorrect" });
 
-        if (existingReservation) {
-            return res.status(400).json({ message: "Ce créneau est déjà réservé." });
-        }
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    res.json({ token });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
-        // Créer la réservation
-        const reservation = new Reservation({
-            userId: req.user.id,
-            selectedService,
-            selectedDate,
-            selectedTime,
-            selectedSalon,
-            selectedHairdresser,
-            userInfo: {
-                name: userInfo.name || `${user.first_name} ${user.last_name}`,
-            },
-        });
+// Inscription
+router.post("/register", async (req, res) => {
+  try {
+    const { first_name, last_name, email, password } = req.body;
+    const existingUser = await User.findOne({ email });
 
-        await reservation.save();
+    if (existingUser) return res.status(400).json({ message: "Email déjà utilisé" });
 
-        res.status(201).json({
-            message: "Réservation créée avec succès",
-            reservation
-        });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    const newUser = new User({
+      first_name,
+      last_name,
+      email,
+      password_hash: passwordHash,
+    });
+
+    await newUser.save();
+    res.status(201).json(newUser);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;
