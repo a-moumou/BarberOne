@@ -6,7 +6,9 @@ import {
 } from "@material-tailwind/react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import axios from "axios";
+import api from '../utils/axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export function SignIn() {
   const [email, setEmail] = useState("");
@@ -16,16 +18,22 @@ export function SignIn() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
-        email,
-        password,
-      });
-      console.log(response.data);
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
-      navigate("/home");
+      const response = await api.post('/api/auth/login', { email, password });
+
+      if (response?.data) {
+        const userInfo = {
+          token: response.data.token,
+          ...response.data.user
+        };
+        console.log('UserInfo à sauvegarder:', userInfo);
+        localStorage.setItem("userInfo", JSON.stringify(userInfo));
+        toast.success("Connexion réussie !");
+        navigate("/");
+      }
     } catch (error) {
-      console.error(error.response.data);
+      console.error("Erreur de connexion:", error);
+      const errorMessage = error.response?.data?.message || "Erreur de connexion";
+      toast.error(errorMessage);
     }
   };
 

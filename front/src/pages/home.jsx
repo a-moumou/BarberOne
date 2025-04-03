@@ -1,16 +1,31 @@
 import React from "react";
 import {
-
   Typography,
-
 } from "@material-tailwind/react";
 import { FingerPrintIcon, UsersIcon } from "@heroicons/react/24/solid";
 import { PageTitle, Footer } from "@/widgets/layout";
 import { FeatureCard, TeamCard } from "@/widgets/cards";
 import { featuresData, teamData, contactData } from "@/data";
 import LocationSection from "@/widgets/layout/LocationSection";
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 export function Home() {
+  const navigate = useNavigate();
+
+  const handleReservation = (e) => {
+    e.preventDefault();
+    const userInfo = localStorage.getItem('userInfo');
+    
+    if (!userInfo) {
+      toast.warning('Veuillez vous connecter pour faire une réservation');
+      navigate('/login');
+      return;
+    }
+    
+    navigate('/reserve');
+  };
+
   return (
     <>
       {/* Hero Section */}
@@ -96,6 +111,20 @@ export function Home() {
       <div className="bg-white">
         <Footer />
       </div>
+
+      <Link 
+        to="/reserve" 
+        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+      >
+        Réserver
+      </Link>
+
+      <button
+        onClick={handleReservation}
+        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+      >
+        Réserver
+      </button>
 
     </>
   );

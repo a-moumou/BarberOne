@@ -13,7 +13,7 @@ import axios from "axios";
 
 export function Navbar({ brandName, routes, action }) {
   const [openNav, setOpenNav] = React.useState(false);
-  const [isLoggedIn, setIsLoggedIn] = React.useState(!!localStorage.getItem("token")); // Vérifie si l'utilisateur est connecté
+  const [isLoggedIn, setIsLoggedIn] = React.useState(!!localStorage.getItem('userInfo'));
 
   React.useEffect(() => {
     const handleResize = () => {

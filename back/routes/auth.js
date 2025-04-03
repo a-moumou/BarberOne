@@ -15,9 +15,27 @@ router.post("/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) return res.status(400).json({ message: "Mot de passe incorrect" });
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
-    res.json({ token });
+    const token = jwt.sign(
+      { 
+        id: user._id,
+        email: user.email
+      }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: "1h" }
+    );
+    
+    // Envoyer les informations de l'utilisateur avec le token
+    res.json({ 
+      token,
+      user: {
+        _id: user._id,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email
+      }
+    });
   } catch (err) {
+    console.error("Erreur de connexion:", err);
     res.status(500).json({ error: err.message });
   }
 });
