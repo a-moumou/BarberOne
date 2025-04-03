@@ -1,6 +1,7 @@
 const Admin = require('../models/Admin');
 const jwt = require('jsonwebtoken');
 
+
 // Connexion admin
 const loginAdmin = async (req, res) => {
   try {
@@ -54,7 +55,26 @@ const verifyAdmin = async (req, res) => {
   }
 };
 
+// Récupérer toutes les réservations
+exports.getAllReservations = async (req, res) => {
+  try {
+    const reservations = await Reservation.find()
+      .populate('userId', 'name email')
+      .populate('selectedHairdresser', 'name')
+      .populate('selectedService', 'name price')
+      .populate('selectedSalon', 'name')
+      .sort({ selectedDate: -1 });
+
+    res.status(200).json(reservations);
+  } catch (error) {
+    console.error('Erreur récupération réservations:', error);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+};
+
+// Mettre à jour une réservation
+
 module.exports = {
   loginAdmin,
-  verifyAdmin
+  verifyAdmin,
 }; 

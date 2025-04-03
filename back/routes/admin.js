@@ -9,4 +9,5 @@ router.post('/login', loginAdmin);
 // Route pour vérifier le token admin
 router.get('/verify', adminAuth, verifyAdmin);
 
+
 module.exports = router; 
