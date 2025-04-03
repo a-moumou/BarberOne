@@ -43,6 +43,15 @@ export const routes = [
     element: <AddSalon />,
     protected: true
   },
+  {
+    name: "",
+    path: "/loginAdmin",
+    element: () => {
+      window.location.href = 'http://localhost:5174/loginAdmin';
+      return null;
+    },
+    protected: false
+  }
 ];
 
 export default routes;

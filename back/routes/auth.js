@@ -40,6 +40,44 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// Connexion Admin
+router.post("/admin/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email, role: 'admin' });
+
+    if (!user) return res.status(400).json({ success: false, message: "Email non trouvé ou non autorisé" });
+
+    const isMatch = await bcrypt.compare(password, user.password_hash);
+    if (!isMatch) return res.status(400).json({ success: false, message: "Mot de passe incorrect" });
+
+    const token = jwt.sign(
+      { 
+        id: user._id,
+        email: user.email,
+        role: 'admin'
+      }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: "1h" }
+    );
+    
+    res.json({ 
+      success: true,
+      token,
+      user: {
+        _id: user._id,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        role: 'admin'
+      }
+    });
+  } catch (err) {
+    console.error("Erreur de connexion admin:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // Inscription
 router.post("/register", async (req, res) => {
   try {

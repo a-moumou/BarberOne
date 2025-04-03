@@ -71,6 +71,7 @@ export function Navbar({ brandName, routes, action }) {
 
   const handleLogout = () => {
     localStorage.removeItem("token"); // Supprime le token
+    localStorage.removeItem("userInfo"); // Supprime les informations de l'utilisateur
     setIsLoggedIn(false); // Met à jour l'état de connexion
     window.location.reload(); // Recharge la page pour mettre à jour l'état
   };
