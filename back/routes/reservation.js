@@ -1,75 +1,95 @@
 const express = require("express");
 const router = express.Router();
-const protect = require("../middleware/auth");
+const { protect } = require("../middleware/auth");
 const {
-  reserve,
-  getReservedTimes
+    reserve,
+    getReservedTimes,
+    getAllReservations
 } = require("../controllers/reservationController");
 const Reservation = require('../models/Reservation');
 
 // Route pour obtenir les horaires réservés
-router.get('/reserved-times', protect, async (req, res) => {
+router.get('/reserved-times', protect, getReservedTimes);
+
+// Route pour créer une réservation
+router.post('/', protect, reserve);
+
+// Route pour obtenir toutes les réservations
+router.get('/', protect, getAllReservations);
+
+// Route pour mettre à jour une réservation
+router.put('/:id', protect, async (req, res) => {
     try {
-        const { hairdresserId, date } = req.query;
-        
-        if (!hairdresserId || !date) {
-            return res.status(400).json({ 
-                message: 'hairdresserId et date sont requis' 
+        const { selectedDate, selectedTime } = req.body;
+
+        if (!selectedDate || !selectedTime) {
+            return res.status(400).json({
+                message: 'La date et l\'heure sont requises'
             });
         }
 
-        const startDate = new Date(date);
+        // Vérifier si le créneau est disponible
+        const startDate = new Date(selectedDate);
         startDate.setHours(0, 0, 0, 0);
-        
-        const endDate = new Date(date);
+
+        const endDate = new Date(selectedDate);
         endDate.setHours(23, 59, 59, 999);
 
-        const reservations = await Reservation.find({
-            hairdresserId,
-            date: {
+        const existingReservation = await Reservation.findOne({
+            _id: { $ne: req.params.id },
+            selectedDate: {
                 $gte: startDate,
                 $lte: endDate
-            }
+            },
+            selectedTime
         });
-        
-        const reservedTimes = reservations.map(reservation => reservation.time);
-        res.json(reservedTimes);
+
+        if (existingReservation) {
+            return res.status(400).json({
+                message: 'Ce créneau est déjà réservé'
+            });
+        }
+
+        const reservation = await Reservation.findByIdAndUpdate(
+            req.params.id,
+            {
+                selectedDate: new Date(selectedDate),
+                selectedTime
+            },
+            { new: true }
+        ).populate('selectedHairdresser', 'name');
+
+        if (!reservation) {
+            return res.status(404).json({
+                message: 'Réservation non trouvée'
+            });
+        }
+
+        res.json(reservation);
     } catch (error) {
-        console.error('Erreur serveur:', error);
-        res.status(500).json({ message: 'Erreur serveur' });
+        console.error('Erreur mise à jour réservation:', error);
+        res.status(400).json({
+            message: error.message || 'Erreur lors de la mise à jour de la réservation'
+        });
     }
 });
 
-// Route pour créer une réservation
-router.post('/', protect, async (req, res) => {
+// Route pour supprimer une réservation
+router.delete('/:id', protect, async (req, res) => {
     try {
-        const { selectedService, selectedDate, selectedTime, selectedSalon, selectedHairdresser, userInfo } = req.body;
-        
-        // Vérification des champs requis
-        if (!selectedService || !selectedDate || !selectedTime || !selectedSalon || !selectedHairdresser || !userInfo?.name) {
-            return res.status(400).json({
-                message: 'Tous les champs sont obligatoires'
+        const reservation = await Reservation.findByIdAndDelete(req.params.id);
+
+        if (!reservation) {
+            return res.status(404).json({
+                message: 'Réservation non trouvée'
             });
         }
 
-        // Création de la réservation avec l'ID de l'utilisateur du token
-        const reservation = await Reservation.create({
-            selectedService,
-            selectedDate: new Date(selectedDate),
-            selectedTime,
-            selectedSalon,
-            selectedHairdresser,
-            userId: req.user._id,
-            userInfo: {
-                name: userInfo.name
-            }
-        });
-
-        res.status(201).json(reservation);
+        res.json({ message: 'Réservation supprimée avec succès' });
     } catch (error) {
-        console.error('Erreur création réservation:', error);
-        res.status(400).json({ 
-            message: error.message || 'Erreur lors de la création de la réservation'
+        console.error('Erreur suppression réservation:', error);
+        res.status(400).json({
+            message: error.message || 'Erreur lors de la suppression de la réservation'
         });
     }
 });

@@ -3,57 +3,76 @@ const mongoose = require("mongoose");
 
 exports.getReservedTimes = async (req, res) => {
   try {
-    const { selectedHairdresser, selectedDate } = req.query;
+    const { hairdresserId, date } = req.query;
 
-    if (!mongoose.Types.ObjectId.isValid(selectedHairdresser)) {
-      return res.status(400).json({ error: "ID coiffeur invalide" });
+    if (!hairdresserId || !date) {
+      return res.status(400).json({
+        message: 'hairdresserId et date sont requis'
+      });
     }
 
+    const startDate = new Date(date);
+    startDate.setHours(0, 0, 0, 0);
+
+    const endDate = new Date(date);
+    endDate.setHours(23, 59, 59, 999);
+
     const reservations = await Reservation.find({
-      selectedHairdresser,
-      selectedDate: new Date(selectedDate)
+      selectedHairdresser: hairdresserId,
+      selectedDate: {
+        $gte: startDate,
+        $lte: endDate
+      }
     });
 
-    res.status(200).json(reservations.map(r => r.selectedTime));
-
+    const reservedTimes = reservations.map(reservation => reservation.selectedTime);
+    res.json(reservedTimes);
   } catch (error) {
-    console.error(`[${new Date().toISOString()}] Erreur réservations: ${error.message}`);
-    res.status(500).json({ error: "Erreur serveur" });
+    console.error('Erreur serveur:', error);
+    res.status(500).json({ message: 'Erreur serveur' });
   }
 };
 
 exports.reserve = async (req, res) => {
   try {
-    const requiredFields = [
-      "selectedService", 
-      "selectedDate", 
-      "selectedTime", 
-      "selectedSalon", 
-      "selectedHairdresser"
-    ];
+    const { selectedService, selectedDate, selectedTime, selectedSalon, selectedHairdresser, userInfo } = req.body;
 
-    const missingFields = requiredFields.filter(field => !req.body[field]);
-    if (missingFields.length > 0) {
+    if (!selectedService || !selectedDate || !selectedTime || !selectedSalon || !selectedHairdresser || !userInfo?.name) {
       return res.status(400).json({
-        error: `Champs manquants: ${missingFields.join(", ")}`
+        message: 'Tous les champs sont obligatoires'
       });
     }
 
-    const reservation = new Reservation({
-      ...req.body,
+    const reservation = await Reservation.create({
+      selectedService,
+      selectedDate: new Date(selectedDate),
+      selectedTime,
+      selectedSalon,
+      selectedHairdresser,
       userId: req.user._id,
-      selectedDate: new Date(req.body.selectedDate)
+      userInfo: {
+        name: userInfo.name
+      }
     });
 
-    await reservation.save();
     res.status(201).json(reservation);
-
   } catch (error) {
-    console.error(`[${new Date().toISOString()}] Erreur création réservation: ${error.message}`);
-    res.status(400).json({ 
-      error: error.message.includes("validation failed")
-        ? "Données invalides"
-        : "Erreur de réservation" 
+    console.error('Erreur création réservation:', error);
+    res.status(400).json({
+      message: error.message || 'Erreur lors de la création de la réservation'
     });
+  }
+};
+
+exports.getAllReservations = async (req, res) => {
+  try {
+    const reservations = await Reservation.find()
+      .populate('selectedHairdresser', 'name')
+      .populate('selectedSalon', 'name address')
+      .sort({ selectedDate: -1, selectedTime: -1 });
+    res.json(reservations);
+  } catch (error) {
+    console.error('Erreur serveur:', error);
+    res.status(500).json({ message: 'Erreur serveur' });
   }
 };

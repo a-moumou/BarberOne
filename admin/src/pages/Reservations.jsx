@@ -1,151 +1,164 @@
-import { useState, useEffect } from 'react'
-import { toast } from 'react-toastify'
-import { backendUrl } from '../App'
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { format, parseISO } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 const Reservations = () => {
-  const [reservations, setReservations] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [reservations, setReservations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchReservations()
-  }, [])
+    const token = localStorage.getItem('admin_token');
+    if (!token) {
+      toast.error('Veuillez vous connecter');
+      navigate('/loginAdmin');
+      return;
+    }
+    fetchReservations();
+  }, [navigate]);
 
   const fetchReservations = async () => {
     try {
-      const response = await fetch(`${backendUrl}/api/admin/reservations`, {
+      const token = localStorage.getItem('admin_token');
+      const response = await axios.get('http://localhost:5000/api/reservations', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+          Authorization: `Bearer ${token}`
         }
-      })
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json()
-      console.log('Réservations reçues:', data) // Pour le débogage
-      setReservations(data)
+      });
+      setReservations(response.data);
+      setLoading(false);
     } catch (error) {
-      console.error('Erreur:', error) // Pour le débogage
-      toast.error('Erreur lors du chargement des réservations')
-    } finally {
-      setLoading(false)
+      if (error.response?.status === 401) {
+        toast.error('Session expirée, veuillez vous reconnecter');
+        navigate('/loginAdmin');
+      } else {
+        toast.error('Erreur lors de la récupération des réservations');
+      }
+      setLoading(false);
     }
-  }
+  };
 
-  const updateReservationStatus = async (id, status) => {
-    try {
-      const response = await fetch(`${backendUrl}/api/admin/reservations/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
-        },
-        body: JSON.stringify({ status })
-      })
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+  const handleDeleteReservation = async (reservationId) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?')) {
+      try {
+        const token = localStorage.getItem('admin_token');
+        await axios.delete(`http://localhost:5000/api/reservations/${reservationId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        toast.success('Réservation supprimée avec succès');
+        fetchReservations();
+      } catch (error) {
+        if (error.response?.status === 401) {
+          toast.error('Session expirée, veuillez vous reconnecter');
+          navigate('/loginAdmin');
+        } else {
+          toast.error('Erreur lors de la suppression de la réservation');
+        }
       }
-      
-      toast.success('Statut mis à jour')
-      fetchReservations()
-    } catch (error) {
-      console.error('Erreur:', error) // Pour le débogage
-      toast.error('Erreur lors de la mise à jour')
     }
-  }
+  };
+
+  const formatDate = (dateString) => {
+    try {
+      if (!dateString) return 'Date non définie';
+      const date = parseISO(dateString);
+      return format(date, 'dd MMMM yyyy', { locale: fr });
+    } catch (error) {
+      console.error('Erreur de formatage de date:', error);
+      return 'Date invalide';
+    }
+  };
 
   if (loading) {
-    return <div className="flex justify-center items-center h-full">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-    </div>
+    return <div className="flex justify-center items-center h-screen">Chargement...</div>;
   }
 
   return (
-    <div className="p-6">
-      <div className="sm:flex sm:items-center">
-        <div className="sm:flex-auto">
-          <h2 className="text-2xl font-semibold text-gray-900">Réservations</h2>
-        </div>
-        <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-          <button
-            type="button"
-            className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
-          >
-            Ajouter une réservation
-          </button>
-        </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Gestion des Réservations</h1>
       </div>
 
-      {reservations.length === 0 ? (
-        <div className="text-center mt-6">
-          <p className="text-gray-500">Aucune réservation trouvée</p>
-        </div>
-      ) : (
-        <div className="mt-8 flex flex-col">
-          <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-              <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-                <table className="min-w-full divide-y divide-gray-300">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Client</th>
-                      <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Service</th>
-                      <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Date</th>
-                      <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Heure</th>
-                      <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Statut</th>
-                      <th className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                        <span className="sr-only">Actions</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 bg-white">
-                    {reservations.map((reservation) => (
-                      <tr key={reservation._id}>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
-                          {reservation.userInfo?.name || 'N/A'}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
-                          {reservation.selectedService?.name || 'N/A'}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
-                          {new Date(reservation.selectedDate).toLocaleDateString()}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
-                          {reservation.selectedTime}
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm">
-                          <select
-                            value={reservation.status}
-                            onChange={(e) => updateReservationStatus(reservation._id, e.target.value)}
-                            className="rounded-md border-gray-300 text-sm"
-                          >
-                            <option value="En attente">En attente</option>
-                            <option value="Confirmé">Confirmé</option>
-                            <option value="Annulé">Annulé</option>
-                            <option value="Terminé">Terminé</option>
-                          </select>
-                        </td>
-                        <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                          <button
-                            onClick={() => updateReservationStatus(reservation._id, 'Annulé')}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            Annuler
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <div className="bg-white shadow-md rounded-lg overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Client
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Service
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Coiffeur
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Salon
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Date
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Heure
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {reservations.map((reservation) => (
+              <tr key={reservation._id}>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900">
+                    {reservation.userInfo?.name || 'Client supprimé'}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">
+                    {reservation.selectedService}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">
+                    {reservation.selectedHairdresser?.name || 'Coiffeur supprimé'}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">
+                    {reservation.selectedSalon?.name || 'Salon supprimé'}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">
+                    {formatDate(reservation.selectedDate)}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">
+                    {reservation.selectedTime}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <button
+                    onClick={() => handleDeleteReservation(reservation._id)}
+                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                  >
+                    Supprimer
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default Reservations 
+export default Reservations; 

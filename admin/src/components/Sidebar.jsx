@@ -1,92 +1,58 @@
-import { NavLink } from 'react-router-dom'
-import {
-  ChartBarIcon,
-  CalendarIcon,
-  UserGroupIcon,
-  ScissorsIcon,
-  WrenchScrewdriverIcon,
-  Cog6ToothIcon,
-  ClockIcon,
-  BuildingStorefrontIcon,
-  UserIcon
-} from '@heroicons/react/24/outline'
+import React from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { FaHome, FaStore, FaUserTie, FaUsers, FaClock, FaList, FaSignOutAlt, FaCalendarAlt } from 'react-icons/fa';
 
 const Sidebar = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const menuItems = [
-    {
-      title: 'Principal',
-      items: [
-        { name: 'Dashboard', icon: ChartBarIcon, path: '/' },
-        { name: 'Réservations', icon: CalendarIcon, path: '/reservations' },
-        { name: 'Horaires', icon: ClockIcon, path: '/horaires' }
-      ]
-    },
-    {
-      title: 'Gestion',
-      items: [
-        { name: 'Clients', icon: UserGroupIcon, path: '/clients' },
-        { name: 'Coiffeurs', icon: ScissorsIcon, path: '/coiffeurs' },
-        { name: 'Services', icon: WrenchScrewdriverIcon, path: '/services' },
-        { name: 'Salons', icon: BuildingStorefrontIcon, path: '/salons' }
-      ]
-    },
-    {
-      title: 'Administration',
-      items: [
-        { name: 'Mon Profil', icon: UserIcon, path: '/profile' },
-        { name: 'Paramètres', icon: Cog6ToothIcon, path: '/settings' }
-      ]
-    }
-  ]
+    { path: '/dashboard', name: 'Tableau de bord', icon: <FaHome /> },
+    { path: '/reservations', name: 'Réservations', icon: <FaCalendarAlt /> },
+    { path: '/salons', name: 'Salons', icon: <FaStore /> },
+    { path: '/coiffeurs', name: 'Coiffeurs', icon: <FaUserTie /> },
+    { path: '/clients', name: 'Clients', icon: <FaUsers /> },
+    { path: '/disponibilites', name: 'Disponibilités', icon: <FaClock /> },
+    { path: '/services', name: 'Services', icon: <FaList /> }
+  ];
+
+  const handleLogout = () => {
+    localStorage.removeItem('admin_token');
+    window.location.href = 'http://localhost:5173';
+  };
 
   return (
-    <div className="hidden md:flex md:flex-shrink-0">
-      <div className="flex flex-col w-64">
-        <div className="flex flex-col h-0 flex-1 bg-gray-800">
-          {/* Logo */}
-          <div className="flex items-center h-16 flex-shrink-0 px-4 bg-gray-900">
-            <img
-              className="h-8 w-auto"
-              src="/logo.png"
-              alt="BarberOne"
-            />
-            <span className="ml-2 text-white text-lg font-semibold">BarberOne</span>
-          </div>
-
-          {/* Navigation */}
-          <div className="flex-1 flex flex-col overflow-y-auto">
-            <nav className="flex-1 px-2 py-4 space-y-4">
-              {menuItems.map((section) => (
-                <div key={section.title}>
-                  <h3 className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    {section.title}
-                  </h3>
-                  <div className="mt-2 space-y-1">
-                    {section.items.map((item) => (
-                      <NavLink
-                        key={item.name}
-                        to={item.path}
-                        className={({ isActive }) =>
-                          `group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
-                            isActive
-                              ? 'bg-gray-900 text-white'
-                              : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                          }`
-                        }
-                      >
-                        <item.icon className="mr-3 flex-shrink-0 h-6 w-6" />
-                        {item.name}
-                      </NavLink>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </nav>
-          </div>
-        </div>
+    <div className="bg-gray-800 text-white w-64 min-h-screen p-4">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold">BarberOne</h1>
       </div>
+      <nav>
+        <ul className="space-y-2">
+          {menuItems.map((item) => (
+            <li key={item.path}>
+              <Link
+                to={item.path}
+                className={`flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-700 ${location.pathname === item.path ? 'bg-gray-700' : ''
+                  }`}
+              >
+                {item.icon}
+                <span>{item.name}</span>
+              </Link>
+            </li>
+          ))}
+          <li>
+            <button
+              onClick={handleLogout}
+              className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-700 w-full text-left"
+            >
+              <FaSignOutAlt />
+              <span>Déconnexion</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
     </div>
-  )
-}
+  );
+};
 
-export default Sidebar
+export default Sidebar;

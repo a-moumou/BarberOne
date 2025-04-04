@@ -2,6 +2,11 @@ require('dotenv').config();
 const express = require("express");
 const connectDB = require("./config/db");
 const cors = require("cors");
+const userRoutes = require('./routes/user');
+const salonRoutes = require("./routes/salon");
+const hairdresserRoutes = require("./routes/hairdresser");
+const serviceRoutes = require("./routes/service");
+const { errorHandler } = require('./middleware/errorMiddleware');
 
 const app = express();
 
@@ -25,8 +30,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/admin", require("./routes/admin"));
 app.use("/api/reservations", require("./routes/reservation"));
-app.use("/api/salons", require("./routes/salon"));
-app.use("/api/hairdressers", require("./routes/hairdresser"));
+app.use("/api/salons", salonRoutes);
+app.use("/api/hairdressers", hairdresserRoutes);
+app.use("/api/services", serviceRoutes);
+app.use('/api/users', userRoutes);
+
+// Error handling
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Serveur lancé sur le port ${PORT}`));

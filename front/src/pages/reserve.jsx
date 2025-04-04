@@ -35,7 +35,7 @@ const ReservePage = () => {
             try {
                 const userInfo = JSON.parse(localStorage.getItem('userInfo'));
                 console.log('UserInfo au chargement:', userInfo);
-                
+
                 if (!userInfo || !userInfo.token) {
                     toast.error('Veuillez vous connecter pour faire une réservation');
                     navigate('/sign-in');
@@ -77,7 +77,7 @@ const ReservePage = () => {
 
         const fetchSalons = async () => {
             try {
-                const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/salons`);
+                const { data } = await api.get('/api/salons');
                 setSalons(data);
             } catch (error) {
                 toast.error('Erreur chargement des salons');
@@ -96,8 +96,8 @@ const ReservePage = () => {
                     const { data } = await axios.get(
                         `${import.meta.env.VITE_API_URL}/api/hairdressers`,
                         {
-                            params: { 
-                                salonId: selectedSalon._id 
+                            params: {
+                                salonId: selectedSalon._id
                             }
                         }
                     );
@@ -142,14 +142,14 @@ const ReservePage = () => {
                     date: date.toISOString()
                 }
             });
-            
+
             console.log('Réponse reçue:', data);
             setReservedTimes(data);
         } catch (error) {
             console.error('Erreur complète:', error);
             console.error('Status de l\'erreur:', error.response?.status);
             console.error('Message d\'erreur:', error.response?.data);
-            
+
             if (error.response?.status === 401) {
                 localStorage.removeItem('userInfo');
                 toast.error('Session expirée, veuillez vous reconnecter');
@@ -168,13 +168,13 @@ const ReservePage = () => {
             toast.warning("Veuillez d'abord sélectionner un coiffeur");
             return;
         }
-        
+
         if (!isAuthenticated) {
             toast.error('Veuillez vous connecter pour continuer');
             navigate('/sign-in');
             return;
         }
-        
+
         setSelectedDate(date);
         fetchReservedTimes(date);
     };
@@ -183,7 +183,7 @@ const ReservePage = () => {
     const handleReservation = async () => {
         try {
             const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-            
+
             // Vérification que toutes les données sont présentes
             if (!selectedService || !selectedDate || !selectedTime || !selectedSalon || !selectedHairdresser) {
                 toast.error('Veuillez remplir tous les champs');
@@ -202,15 +202,15 @@ const ReservePage = () => {
             };
 
             console.log('Données de réservation envoyées:', reservationData);
-            
+
             const response = await api.post('/api/reservations', reservationData);
             console.log('Réponse du serveur:', response.data);
-            
+
             // Passer à l'étape de confirmation
             setCurrentStep(4);
-            
+
             toast.success('Réservation effectuée avec succès!');
-            
+
             // Attendre 3 secondes avant de rediriger
             setTimeout(() => {
                 navigate('/mes-reservations');
@@ -218,7 +218,7 @@ const ReservePage = () => {
         } catch (error) {
             console.error('Erreur complète:', error);
             console.error('Message d\'erreur:', error.response?.data);
-            
+
             if (error.response?.status === 401) {
                 toast.error('Session expirée, veuillez vous reconnecter');
                 navigate('/sign-in');
@@ -243,9 +243,9 @@ const ReservePage = () => {
                     time,
                     isReserved: reservedTimes.includes(time),
                     isSelected: selectedTime === time,
-                    isPast: selectedDate?.toDateString() === new Date().toDateString() && 
-                            new Date().getHours() > hour || 
-                            (new Date().getHours() === hour && new Date().getMinutes() > minutes)
+                    isPast: selectedDate?.toDateString() === new Date().toDateString() &&
+                        new Date().getHours() > hour ||
+                        (new Date().getHours() === hour && new Date().getMinutes() > minutes)
                 });
             }
         }
@@ -256,7 +256,7 @@ const ReservePage = () => {
     const generateDates = () => {
         const dates = [];
         const today = new Date();
-        
+
         for (let i = 0; i < 3; i++) {
             const date = new Date(today);
             date.setDate(today.getDate() + currentDayIndex + i);
@@ -273,23 +273,22 @@ const ReservePage = () => {
     return (
         <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
             <ToastContainer position="bottom-right" />
-            
+
             {/* En-tête des étapes */}
             <div className="max-w-7xl mx-auto mb-8">
                 <div className="flex justify-between items-center bg-white rounded-lg shadow-sm p-4">
                     {steps.map((step, index) => (
-                        <div 
+                        <div
                             key={step}
-                            className={`flex flex-col items-center ${
-                                index <= currentStep 
-                                    ? 'text-blue-600' 
+                            className={`flex flex-col items-center ${index <= currentStep
+                                    ? 'text-blue-600'
                                     : 'text-gray-400'
-                            }`}
+                                }`}
                         >
                             <div className={`
                                 w-8 h-8 rounded-full flex items-center justify-center mb-2
-                                ${index <= currentStep 
-                                    ? 'bg-blue-600 text-white' 
+                                ${index <= currentStep
+                                    ? 'bg-blue-600 text-white'
                                     : 'bg-gray-200'
                                 }
                             `}>
@@ -308,7 +307,7 @@ const ReservePage = () => {
                         <h2 className="text-2xl font-bold text-gray-900 mb-6">Choisissez votre salon</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {salons.map(salon => (
-                                <div 
+                                <div
                                     key={salon._id}
                                     className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden cursor-pointer"
                                     onClick={() => {
@@ -412,7 +411,7 @@ const ReservePage = () => {
                         <h2 className="text-2xl font-bold text-gray-900 mb-6">
                             Choisissez votre date et heure
                         </h2>
-                        
+
                         {/* Sélection de la date */}
                         <div className="space-y-6">
                             <div className="flex items-center justify-between mb-4">
@@ -425,7 +424,7 @@ const ReservePage = () => {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                                     </svg>
                                 </button>
-                                
+
                                 <div className="grid grid-cols-3 gap-4 flex-1 mx-4">
                                     {generateDates().map(({ date, dayName, dayNumber, month }) => (
                                         <button
@@ -481,8 +480,8 @@ const ReservePage = () => {
                                                 disabled={slot.isPast || slot.isReserved}
                                                 className={`
                                                     p-3 rounded-lg text-sm font-medium transition-all duration-200
-                                                    ${slot.isSelected 
-                                                        ? 'bg-blue-600 text-white' 
+                                                    ${slot.isSelected
+                                                        ? 'bg-blue-600 text-white'
                                                         : slot.isPast || slot.isReserved
                                                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                                             : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
