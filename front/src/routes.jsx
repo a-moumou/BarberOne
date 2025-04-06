@@ -1,4 +1,4 @@
-import { Home, Profile, SignIn, SignUp, Reserve, AddHairdresser, AddSalon } from "@/pages";
+import { Home, Profile, SignIn, SignUp, Reserve,  } from "@/pages";
 
 export const routes = [
   {
@@ -29,18 +29,6 @@ export const routes = [
     name: "",
     path: "/reserve",
     element: <Reserve />,
-    protected: true
-  },
-  {
-    name: "Ajouter Coiffeur",
-    path: "/add-hairdresser",
-    element: <AddHairdresser />,
-    protected: true
-  },
-  {
-    name: "Ajouter Salon",
-    path: "/add-salon",
-    element: <AddSalon />,
     protected: true
   },
   {

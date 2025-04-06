@@ -8,34 +8,30 @@ const {
     deleteService
 } = require('../controllers/serviceController');
 
-// Route pour créer un service
-router.post("/", protect, admin, async (req, res) => {
+// Route pour créer un service (admin uniquement)
+router.post("/", protect, admin, createService);
+
+// Route pour récupérer tous les services (accessible à tous les utilisateurs authentifiés)
+router.get("/", protect, getAllServices);
+
+// Route pour récupérer tous les services (accessible à tous, même non authentifiés)
+router.get("/public", async (req, res) => {
     try {
-        const { name, description, price, duration, salonId } = req.body;
-        const service = new Service({
-            name,
-            description,
-            price,
-            duration,
-            salonId
-        });
-        await service.save();
-        res.status(201).json({ message: "Service créé avec succès", service });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+        const services = await Service.find().sort({ name: 1 });
+        res.json(services);
+    } catch (error) {
+        console.error('Erreur récupération services:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
     }
 });
 
-// Route pour récupérer tous les services
-router.get("/", protect, admin, getAllServices);
-
-// Route pour mettre à jour un service
-router.put("/:id", protect, async (req, res) => {
+// Route pour mettre à jour un service (admin uniquement)
+router.put("/:id", protect, admin, async (req, res) => {
     try {
-        const { name, description, price, duration } = req.body;
+        const { name, description, price, duration, salonId } = req.body;
         const service = await Service.findByIdAndUpdate(
             req.params.id,
-            { name, description, price, duration },
+            { name, description, price, duration, salonId },
             { new: true }
         ).populate('salonId', 'name address');
 
@@ -50,7 +46,7 @@ router.put("/:id", protect, async (req, res) => {
     }
 });
 
-// Route pour supprimer un service
+// Route pour supprimer un service (admin uniquement)
 router.delete("/:id", protect, admin, deleteService);
 
 module.exports = router; 

@@ -74,7 +74,7 @@ export function SignIn() {
           </Button>
 
           <div className="mt-4 text-center">
-            <a href="http://localhost:5174/loginAdmin" target="_blank">
+            <a href="http://localhost:5174/loginAdmin">
               <Button variant="outlined" size="sm" className="text-gray-900">
                 Accès Administration
               </Button>
@@ -82,11 +82,7 @@ export function SignIn() {
           </div>
 
           <div className="flex items-center justify-between gap-2 mt-6">
-            <Typography variant="small" className="font-medium text-gray-900">
-              <a href="#">
-                Mot de passe oublié ?
-              </a>
-            </Typography>
+           
           </div>
           <Typography variant="paragraph" className="text-center text-blue-gray-500 font-medium mt-4">
             Pas encore inscrit ?

@@ -61,6 +61,7 @@ const Dashboard = () => {
           .sort((a, b) => new Date(b.date) - new Date(a.date))
           .slice(0, 5);
 
+        console.log('Réservations récentes:', recentReservations);
         setRecentActivity(recentReservations);
         setLoading(false);
       } catch (error) {
@@ -104,7 +105,7 @@ const Dashboard = () => {
 
   if (error) {
     return (
-      <div className="p-6">
+      <div className="flex justify-center items-center h-screen">
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
           <strong className="font-bold">Erreur!</strong>
           <span className="block sm:inline"> {error}</span>
@@ -114,58 +115,80 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-semibold text-gray-900">Tableau de bord</h2>
-
-      {/* Stats Grid */}
-      <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {statsConfig.map((stat) => (
-          <div
-            key={stat.name}
-            className="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow duration-300"
-          >
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <stat.icon className={`h-6 w-6 ${stat.color}`} />
-                </div>
-                <div className="ml-5 flex-1">
-                  <p className="text-sm font-medium text-gray-500 truncate">
-                    {stat.name}
-                  </p>
-                  <p className="mt-1 text-3xl font-semibold text-gray-900">
-                    {stat.value}
-                  </p>
-                </div>
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold text-gray-800">Tableau de bord</h1>
+      
+      {/* Statistiques */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {statsConfig.map((stat, index) => (
+          <div key={index} className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className={`p-3 rounded-full ${stat.color} bg-opacity-10`}>
+                <stat.icon className={`h-6 w-6 ${stat.color}`} />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">{stat.name}</p>
+                <p className="text-2xl font-semibold text-gray-800">{stat.value}</p>
               </div>
             </div>
           </div>
         ))}
       </div>
-
-      {/* Recent Activity */}
-      <div className="mt-8">
-        <h3 className="text-lg font-medium text-gray-900">Activité récente</h3>
-        <div className="mt-4 bg-white shadow rounded-lg">
-          <div className="p-6">
-            <ul className="divide-y divide-gray-200">
-              {recentActivity.map((activity, index) => (
-                <li key={index} className="py-4">
-                  <div className="flex flex-col">
-                    <span className="font-medium">
-                      Réservation - {activity.client?.name || 'Client'}
-                    </span>
-                    <span className="text-sm text-gray-500">
-                      {formatDate(activity.date)}
-                    </span>
-                    <span className="text-sm text-gray-500">
-                      Service: {activity.service?.name || 'Non spécifié'}
-                    </span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
+      
+      {/* Activité récente */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h2 className="text-lg font-medium text-gray-800">Activité récente</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Client
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Service
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Date
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Statut
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {recentActivity.length > 0 ? (
+                recentActivity.map((activity, index) => (
+                  <tr key={index}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {activity.userId 
+                        ? `${activity.userId.first_name} ${activity.userId.last_name}` 
+                        : activity.userInfo?.name || 'Client inconnu'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {activity.selectedService?.name || 'Service non spécifié'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {formatDate(activity.selectedDate)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        Confirmé
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-500">
+                    Aucune activité récente
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

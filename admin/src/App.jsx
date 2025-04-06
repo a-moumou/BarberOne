@@ -36,9 +36,9 @@ const App = () => {
           path="/*"
           element={
             <ProtectedRoute>
-              <div className="flex flex-1">
+              <div className="flex flex-col md:flex-row w-full">
                 <Sidebar />
-                <div className="flex-1 overflow-auto">
+                <main className="flex-1 overflow-auto p-4 md:p-6 pt-16 md:pt-6">
                   <Routes>
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />
                     <Route path="/dashboard" element={<Dashboard />} />
@@ -49,7 +49,7 @@ const App = () => {
                     <Route path="/services" element={<Services />} />
                     <Route path="/reservations" element={<Reservations />} />
                   </Routes>
-                </div>
+                </main>
               </div>
             </ProtectedRoute>
           }

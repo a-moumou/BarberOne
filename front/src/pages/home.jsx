@@ -75,11 +75,12 @@ export function Home() {
         <div className="container mx-auto">
           <PageTitle heading="Notre équipe" />
           <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-12">
-            {teamData.map(({ img, name }) => (
+            {teamData.map(({ id, img, name, position }) => (
               <TeamCard
-                key={name}
+                key={id}
                 img={img}
                 name={name}
+                position={position}
               />
             ))}
           </div>
@@ -112,19 +113,7 @@ export function Home() {
         <Footer />
       </div>
 
-      <Link 
-        to="/reserve" 
-        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-      >
-        Réserver
-      </Link>
-
-      <button
-        onClick={handleReservation}
-        className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-      >
-        Réserver
-      </button>
+    
 
     </>
   );

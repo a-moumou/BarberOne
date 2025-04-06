@@ -4,7 +4,7 @@ const User = require('../models/User');
 exports.getAllUsers = async (req, res) => {
     try {
         const users = await User.find()
-            .select('-password')
+            .select('-password_hash')
             .sort({ createdAt: -1 });
         res.status(200).json(users);
     } catch (error) {
@@ -16,7 +16,7 @@ exports.getAllUsers = async (req, res) => {
 // Récupérer un utilisateur par ID
 exports.getUserById = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id).select('-password');
+        const user = await User.findById(req.params.id).select('-password_hash');
         if (!user) {
             return res.status(404).json({ error: "Utilisateur non trouvé" });
         }

@@ -6,6 +6,10 @@ const serviceSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    description: {
+        type: String,
+        trim: true
+    },
     price: {
         type: Number,
         required: true,
@@ -16,6 +20,10 @@ const serviceSchema = new mongoose.Schema({
         required: true,
         min: 15,
         default: 30
+    },
+    salonId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Salon"
     }
 }, {
     timestamps: true

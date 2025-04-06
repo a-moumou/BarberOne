@@ -29,6 +29,7 @@ const Disponibilites = () => {
                     Authorization: `Bearer ${token}`
                 }
             });
+            console.log('Salons reçus:', response.data);
             setSalons(response.data);
         } catch (error) {
             if (error.response?.status === 401) {
@@ -48,6 +49,7 @@ const Disponibilites = () => {
                     Authorization: `Bearer ${token}`
                 }
             });
+            console.log('Coiffeurs reçus:', response.data);
             setCoiffeurs(response.data);
             setLoading(false);
         } catch (error) {
@@ -95,13 +97,13 @@ const Disponibilites = () => {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold">Gestion des Disponibilités</h1>
-                <div className="flex items-center space-x-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 space-y-4 sm:space-y-0">
+                <h1 className="text-2xl sm:text-3xl font-bold">Gestion des Disponibilités</h1>
+                <div className="w-full sm:w-auto">
                     <select
                         value={selectedSalon}
                         onChange={(e) => setSelectedSalon(e.target.value)}
-                        className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full sm:w-64 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                         <option value="">Tous les salons</option>
                         {salons.map((salon) => (
@@ -114,59 +116,61 @@ const Disponibilites = () => {
             </div>
 
             <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Nom
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Salon
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Disponibilité
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Actions
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {filteredCoiffeurs.map((coiffeur) => (
-                            <tr key={coiffeur._id}>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm font-medium text-gray-900">
-                                        {coiffeur.name}
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm text-gray-900">
-                                        {coiffeur.salonId?.name || 'Non assigné'}
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${coiffeur.isAvailable
-                                            ? 'bg-green-100 text-green-800'
-                                            : 'bg-red-100 text-red-800'
-                                        }`}>
-                                        {coiffeur.isAvailable ? 'Disponible' : 'Indisponible'}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button
-                                        onClick={() => toggleAvailability(coiffeur._id, coiffeur.isAvailable)}
-                                        className={`${coiffeur.isAvailable
-                                                ? 'bg-red-500 hover:bg-red-600'
-                                                : 'bg-green-500 hover:bg-green-600'
-                                            } text-white px-3 py-1 rounded`}
-                                    >
-                                        {coiffeur.isAvailable ? 'Marquer indisponible' : 'Marquer disponible'}
-                                    </button>
-                                </td>
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Coiffeur
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Salon
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Statut
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Actions
+                                </th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {filteredCoiffeurs.map((coiffeur) => (
+                                <tr key={coiffeur._id} className="hover:bg-gray-50">
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm font-medium text-gray-900">
+                                            {coiffeur.name}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-gray-500">
+                                            {coiffeur.salonId?.name || 'N/A'}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <span
+                                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                                coiffeur.isAvailable
+                                                    ? 'bg-green-100 text-green-800'
+                                                    : 'bg-red-100 text-red-800'
+                                            }`}
+                                        >
+                                            {coiffeur.isAvailable ? 'Disponible' : 'Indisponible'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <button
+                                            onClick={() => toggleAvailability(coiffeur._id, coiffeur.isAvailable)}
+                                            className="text-blue-600 hover:text-blue-900"
+                                        >
+                                            {coiffeur.isAvailable ? 'Rendre indisponible' : 'Rendre disponible'}
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );

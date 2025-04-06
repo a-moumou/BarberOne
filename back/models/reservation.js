@@ -7,7 +7,8 @@ const ReservationSchema = new mongoose.Schema({
     required: [true, "L'utilisateur est obligatoire"]
   },
   selectedService: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Service",
     required: [true, "Le service est obligatoire"]
   },
   selectedDate: {

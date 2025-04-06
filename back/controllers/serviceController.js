@@ -13,7 +13,7 @@ const getAllServices = asyncHandler(async (req, res) => {
 // @route   POST /api/services
 // @access  Private/Admin
 const createService = asyncHandler(async (req, res) => {
-    const { name, price, duration } = req.body;
+    const { name, description, price, duration, salonId } = req.body;
 
     if (!name || !price || !duration) {
         res.status(400);
@@ -22,8 +22,10 @@ const createService = asyncHandler(async (req, res) => {
 
     const service = await Service.create({
         name,
+        description,
         price: parseFloat(price),
-        duration: parseInt(duration)
+        duration: parseInt(duration),
+        salonId
     });
 
     res.status(201).json(service);
@@ -33,14 +35,13 @@ const createService = asyncHandler(async (req, res) => {
 // @route   DELETE /api/services/:id
 // @access  Private/Admin
 const deleteService = asyncHandler(async (req, res) => {
-    const service = await Service.findById(req.params.id);
+    const service = await Service.findByIdAndDelete(req.params.id);
 
     if (!service) {
         res.status(404);
         throw new Error('Service non trouvé');
     }
 
-    await service.remove();
     res.json({ message: 'Service supprimé' });
 });
 

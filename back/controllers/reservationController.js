@@ -23,7 +23,7 @@ exports.getReservedTimes = async (req, res) => {
         $gte: startDate,
         $lte: endDate
       }
-    });
+    }).populate('selectedService', 'name price duration');
 
     const reservedTimes = reservations.map(reservation => reservation.selectedTime);
     res.json(reservedTimes);
@@ -44,7 +44,7 @@ exports.reserve = async (req, res) => {
     }
 
     const reservation = await Reservation.create({
-      selectedService,
+      selectedService: selectedService,
       selectedDate: new Date(selectedDate),
       selectedTime,
       selectedSalon,
@@ -67,6 +67,8 @@ exports.reserve = async (req, res) => {
 exports.getAllReservations = async (req, res) => {
   try {
     const reservations = await Reservation.find()
+      .populate('userId', 'first_name last_name email')
+      .populate('selectedService', 'name price duration')
       .populate('selectedHairdresser', 'name')
       .populate('selectedSalon', 'name address')
       .sort({ selectedDate: -1, selectedTime: -1 });

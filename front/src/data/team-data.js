@@ -14,7 +14,6 @@ export const teamData = [
   {
     img: "/img/team-4.png",
     name: "Jenna Kardi",
-    position: "Founder and CEO",
   },
   {
     img: "/img/team-1.jpg",

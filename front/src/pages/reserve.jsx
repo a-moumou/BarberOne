@@ -15,19 +15,13 @@ const ReservePage = () => {
     const [selectedTime, setSelectedTime] = useState(null);
     const [salons, setSalons] = useState([]);
     const [hairdressers, setHairdressers] = useState([]);
+    const [services, setServices] = useState([]);
     const [reservedTimes, setReservedTimes] = useState([]);
     const [userInfo, setUserInfo] = useState({ name: '', userId: '' });
     const [currentDayIndex, setCurrentDayIndex] = useState(0);
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-    // Configuration des services
-    const services = [
-        { id: 1, name: "Coupe Homme", duration: 30, price: 25 },
-        { id: 2, name: "Coupe Femme", duration: 45, price: 35 },
-        { id: 3, name: "Coloration", duration: 60, price: 50 }
-    ];
 
     // Vérification de l'authentification au chargement
     useEffect(() => {
@@ -84,8 +78,18 @@ const ReservePage = () => {
             }
         };
 
+        const fetchServices = async () => {
+            try {
+                const { data } = await api.get('/api/services');
+                setServices(data);
+            } catch (error) {
+                toast.error('Erreur chargement des services');
+            }
+        };
+
         loadUserData();
         fetchSalons();
+        fetchServices();
     }, [navigate]);
 
     // Chargement des coiffeurs
@@ -181,51 +185,33 @@ const ReservePage = () => {
 
     // Fonction pour gérer la réservation
     const handleReservation = async () => {
+        if (!selectedService || !selectedDate || !selectedTime || !selectedSalon || !selectedHairdresser) {
+            toast.error('Veuillez remplir tous les champs');
+            return;
+        }
+
+        setIsLoading(true);
         try {
-            const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-
-            // Vérification que toutes les données sont présentes
-            if (!selectedService || !selectedDate || !selectedTime || !selectedSalon || !selectedHairdresser) {
-                toast.error('Veuillez remplir tous les champs');
-                return;
-            }
-
             const reservationData = {
-                selectedService: selectedService.name,
-                selectedDate: selectedDate.toISOString(),
-                selectedTime: selectedTime,
+                selectedService: selectedService._id,
+                selectedDate,
+                selectedTime,
                 selectedSalon: selectedSalon._id,
                 selectedHairdresser: selectedHairdresser._id,
                 userInfo: {
-                    name: `${userInfo.first_name} ${userInfo.last_name}`
+                    name: userInfo.name,
+                    userId: userInfo.userId
                 }
             };
 
-            console.log('Données de réservation envoyées:', reservationData);
-
-            const response = await api.post('/api/reservations', reservationData);
-            console.log('Réponse du serveur:', response.data);
-
-            // Passer à l'étape de confirmation
-            setCurrentStep(4);
-
-            toast.success('Réservation effectuée avec succès!');
-
-            // Attendre 3 secondes avant de rediriger
-            setTimeout(() => {
-                navigate('/mes-reservations');
-            }, 3000);
+            const { data } = await api.post('/api/reservations', reservationData);
+            toast.success('Réservation effectuée avec succès');
+            navigate('/');
         } catch (error) {
-            console.error('Erreur complète:', error);
-            console.error('Message d\'erreur:', error.response?.data);
-
-            if (error.response?.status === 401) {
-                toast.error('Session expirée, veuillez vous reconnecter');
-                navigate('/sign-in');
-            } else {
-                const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Erreur lors de la réservation';
-                toast.error(errorMessage);
-            }
+            console.error('Erreur lors de la réservation:', error);
+            toast.error(error.response?.data?.message || 'Erreur lors de la réservation');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -268,6 +254,20 @@ const ReservePage = () => {
             });
         }
         return dates;
+    };
+
+    // Fonction pour revenir à l'étape précédente
+    const handleBack = () => {
+        if (currentStep > 0) {
+            setCurrentStep(currentStep - 1);
+        }
+    };
+
+    // Fonction pour passer à l'étape suivante
+    const handleNext = () => {
+        if (currentStep < steps.length - 1) {
+            setCurrentStep(currentStep + 1);
+        }
     };
 
     return (
@@ -334,14 +334,21 @@ const ReservePage = () => {
                         <h2 className="text-2xl font-bold text-gray-900 mb-6">
                             Choisissez votre coiffeur pour {selectedSalon?.name}
                         </h2>
-                        {console.log('Nombre de coiffeurs:', hairdressers.length)} {/* Pour déboguer */}
                         {hairdressers && hairdressers.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {hairdressers.map(hairdresser => (
                                     <div
                                         key={hairdresser._id}
-                                        className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden cursor-pointer"
+                                        className={`bg-white rounded-lg shadow-sm transition-shadow duration-200 overflow-hidden ${
+                                            !hairdresser.isAvailable 
+                                                ? 'opacity-50 cursor-not-allowed' 
+                                                : 'hover:shadow-md cursor-pointer'
+                                        }`}
                                         onClick={() => {
+                                            if (!hairdresser.isAvailable) {
+                                                toast.warning("Ce coiffeur est actuellement indisponible");
+                                                return;
+                                            }
                                             setSelectedHairdresser(hairdresser);
                                             setCurrentStep(2);
                                         }}
@@ -353,11 +360,20 @@ const ReservePage = () => {
                                             <p className="text-gray-600 mb-4">
                                                 {hairdresser.specialty || 'Coiffeur polyvalent'}
                                             </p>
-                                            <div className="flex justify-end">
-                                                <span className="text-blue-600 font-medium">
-                                                    Sélectionner →
-                                                </span>
-                                            </div>
+                                            {!hairdresser.isAvailable ? (
+                                                <div className="flex items-center text-red-500">
+                                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                    </svg>
+                                                    <span className="font-medium">Coiffeur indisponible</span>
+                                                </div>
+                                            ) : (
+                                                <div className="flex justify-end">
+                                                    <span className="text-blue-600 font-medium">
+                                                        Sélectionner →
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
@@ -380,25 +396,22 @@ const ReservePage = () => {
 
                 {/* Étape 3: Sélection du service */}
                 {currentStep === 2 && (
-                    <div className="space-y-6">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Choisissez votre service</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {services.map(service => (
+                    <div className="space-y-4">
+                        <h2 className="text-2xl font-bold text-center">Choisissez votre service</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {services.map((service) => (
                                 <div
-                                    key={service.id}
-                                    className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden cursor-pointer"
-                                    onClick={() => {
-                                        setSelectedService(service);
-                                        setCurrentStep(3);
-                                    }}
+                                    key={service._id}
+                                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                                        selectedService?._id === service._id
+                                            ? 'border-blue-500 bg-blue-50'
+                                            : 'border-gray-200 hover:border-blue-300'
+                                    }`}
+                                    onClick={() => setSelectedService(service)}
                                 >
-                                    <div className="p-6">
-                                        <h3 className="text-xl font-semibold text-gray-900 mb-2">{service.name}</h3>
-                                        <div className="flex justify-between items-center">
-                                            <p className="text-gray-600">{service.duration} min</p>
-                                            <p className="text-blue-600 font-semibold">{service.price}€</p>
-                                        </div>
-                                    </div>
+                                    <h3 className="font-semibold">{service.name}</h3>
+                                    <p className="text-gray-600">{service.duration} minutes</p>
+                                    <p className="text-blue-600 font-bold">{service.price} €</p>
                                 </div>
                             ))}
                         </div>
@@ -537,6 +550,24 @@ const ReservePage = () => {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                 </div>
             )}
+
+            <div className="mt-6 flex justify-between">
+                <button
+                    onClick={handleBack}
+                    className={`px-4 py-2 bg-gray-200 text-gray-700 rounded-lg ${
+                        currentStep === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-300'
+                    }`}
+                    disabled={currentStep === 0}
+                >
+                    Retour
+                </button>
+                <button
+                    onClick={currentStep === steps.length - 1 ? handleReservation : handleNext}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                    {currentStep === steps.length - 1 ? 'Confirmer' : 'Suivant'}
+                </button>
+            </div>
         </div>
     );
 };
