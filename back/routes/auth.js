@@ -4,6 +4,11 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const router = express.Router();
 
+// Route de vérification de la connexion
+router.get("/check", (req, res) => {
+  res.status(200).json({ message: "Serveur en ligne" });
+});
+
 // Connexion
 router.post("/login", async (req, res) => {
   try {
