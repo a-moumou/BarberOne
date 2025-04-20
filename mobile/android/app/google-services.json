@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "90567432960",
+    "project_id": "barber-one-c77cb",
+    "storage_bucket": "barber-one-c77cb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:90567432960:android:5a90502f83a1c13c78f1e5",
+        "android_client_info": {
+          "package_name": "com.example.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIlfS1Ob2i4-yiQiBmAhmLlSUDkD3lud8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

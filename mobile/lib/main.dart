@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'screens/login_screen.dart';
+import 'screens/services_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/booking_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -9,46 +10,58 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'BarberOne',
-      debugShowCheckedModeBanner: false, // Désactiver la bannière de debug
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.dark(
+          primary: const Color(0xFFD4AF37),
+          secondary: const Color(0xFFD4AF37),
+          surface: const Color(0xFF2C2C2C),
+          background: const Color(0xFF1E1E1E),
+        ),
+        scaffoldBackgroundColor: const Color(0xFF1E1E1E),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF2C2C2C),
+          elevation: 0,
+          centerTitle: true,
+          iconTheme: IconThemeData(color: Color(0xFFD4AF37)),
+          titleTextStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        cardTheme: CardTheme(
+          color: const Color(0xFF2C2C2C),
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: Color(0xFFD4AF37),
+          foregroundColor: Colors.white,
+        ),
         useMaterial3: true,
-        // Optimisations de rendu
-        platform: TargetPlatform.android,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      initialRoute: '/login',
-      routes: {
-        '/login': (context) => const LoginScreen(),
-      },
+      initialRoute: '/home',
       onGenerateRoute: (settings) {
-        if (settings.name == '/home') {
+        if (settings.name == '/booking') {
           final args = settings.arguments as Map<String, dynamic>;
           return MaterialPageRoute(
-            builder: (context) => HomeScreen(userData: args),
+            builder: (context) => BookingScreen(service: args),
           );
         }
         return null;
+      },
+      routes: {
+        '/home': (context) => const HomeScreen(userData: {}),
+        '/services': (context) => const ServiceScreen(),
+        '/calendar': (context) => const ServiceScreen(),
+        '/notifications': (context) => const ServiceScreen(),
       },
     );
   }
