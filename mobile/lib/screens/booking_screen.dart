@@ -9,7 +9,6 @@ class BookingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MainLayout(
-      currentIndex: 1,
       child: SafeArea(
         child: SingleChildScrollView(
           child: Padding(

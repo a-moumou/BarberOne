@@ -5,6 +5,7 @@ const { protect, admin } = require("../middleware/auth");
 
 // 🔹 Route publique pour récupérer tous les salons
 router.get("/public", async (req, res) => {
+    console.log("Route /api/salons/public appelée");
     try {
         const salons = await Salon.find();
         res.json(salons);

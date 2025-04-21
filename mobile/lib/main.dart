@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'screens/services_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/booking_screen.dart';
+import 'screens/login_screen.dart';
+import 'widgets/main_layout.dart';
+import 'widgets/custom_bottom_bar.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,6 +18,15 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'BarberOne',
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('fr', 'FR'),
+      ],
+      locale: const Locale('fr', 'FR'),
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.dark(
@@ -47,22 +60,76 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      initialRoute: '/home',
-      onGenerateRoute: (settings) {
-        if (settings.name == '/booking') {
-          final args = settings.arguments as Map<String, dynamic>;
-          return MaterialPageRoute(
-            builder: (context) => BookingScreen(service: args),
-          );
-        }
-        return null;
-      },
+      initialRoute: '/login',
       routes: {
-        '/home': (context) => const HomeScreen(userData: {}),
-        '/services': (context) => const ServiceScreen(),
-        '/calendar': (context) => const ServiceScreen(),
-        '/notifications': (context) => const ServiceScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/main': (context) {
+          final args = ModalRoute.of(context)?.settings.arguments
+              as Map<String, dynamic>?;
+          return MainNavigator(userData: args);
+        },
       },
+    );
+  }
+}
+
+class MainNavigator extends StatefulWidget {
+  final Map<String, dynamic>? userData;
+
+  const MainNavigator({Key? key, this.userData}) : super(key: key);
+
+  @override
+  State<MainNavigator> createState() => _MainNavigatorState();
+}
+
+class _MainNavigatorState extends State<MainNavigator> {
+  int _currentIndex = 0;
+  final PageController _pageController = PageController();
+
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      HomeScreen(userData: widget.userData),
+      ServiceScreen(userData: widget.userData),
+      ServiceScreen(
+          userData: widget.userData), // Notifications screen à implémenter
+    ];
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _onPageChanged(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF1E1E1E),
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: _onPageChanged,
+        children: _screens,
+      ),
+      bottomNavigationBar: CustomBottomBar(
+        selectedIndex: _currentIndex,
+        onItemSelected: (index) {
+          _pageController.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        },
+      ),
     );
   }
 }

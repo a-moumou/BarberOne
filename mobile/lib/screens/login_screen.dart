@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import 'dart:convert';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -65,18 +66,20 @@ class _LoginScreenState extends State<LoginScreen> {
         );
 
         if (mounted) {
-          // Afficher les données pour le débogage
-          print('Réponse de connexion : $response');
-
-          // Vérifier que nous avons les données utilisateur requises
-          if (response['user'] == null) {
-            throw Exception('Données utilisateur manquantes dans la réponse');
+          if (response['token'] == null) {
+            throw Exception('Token manquant dans la réponse');
           }
 
-          // Navigation vers la page d'accueil avec les données utilisateur
+          final userData = {
+            'token': response['token'],
+            'first_name': response['user']['first_name'] ?? 'Client',
+            'last_name': response['user']['last_name'] ?? '',
+            'email': response['user']['email'] ?? '',
+          };
+
           Navigator.of(context).pushReplacementNamed(
-            '/home',
-            arguments: response,
+            '/main',
+            arguments: userData,
           );
         }
       } catch (e) {

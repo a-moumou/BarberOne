@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import '../widgets/main_layout.dart';
 
-class ServiceScreen extends StatefulWidget {
-  const ServiceScreen({Key? key}) : super(key: key);
+class ServiceScreen extends StatelessWidget {
+  final Map<String, dynamic>? userData;
 
-  @override
-  State<ServiceScreen> createState() => _ServiceScreenState();
-}
+  ServiceScreen({Key? key, this.userData}) : super(key: key);
 
-class _ServiceScreenState extends State<ServiceScreen> {
   final List<Map<String, dynamic>> services = [
     {
       'name': 'ZE Prestige by Fay',
@@ -36,7 +33,6 @@ class _ServiceScreenState extends State<ServiceScreen> {
   @override
   Widget build(BuildContext context) {
     return MainLayout(
-      currentIndex: 0,
       child: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,18 +47,18 @@ class _ServiceScreenState extends State<ServiceScreen> {
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
-                            'Furqan',
-                            style: TextStyle(
+                            userData?['first_name'] ?? 'Furqan',
+                            style: const TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
                               color: Colors.grey,
                             ),
                           ),
                           Text(
-                            'Javed',
-                            style: TextStyle(
+                            userData?['last_name'] ?? 'Javed',
+                            style: const TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
                               color: Colors.grey,
